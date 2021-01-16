@@ -453,6 +453,10 @@ protected by TLS.
 
  
 
+ 
+
+ 
+
 ### Generating data
 
 -   We supply a component called InitComponent that can be used to generate data
@@ -615,6 +619,20 @@ Setting up and running the green micro-service
 
  
 
+Configuration:
+
+| **Configuration** | **File**               | **Property**          | **Value**                                                              |
+|-------------------|------------------------|-----------------------|------------------------------------------------------------------------|
+| port              | application.properties | server.port           | **18082**                                                              |
+| JDBC URL          | application.properties | spring.datasource.url | jdbc:postgresql://localhost:**26258**/banking?ssl=true&sslmode=require |
+
+Note that we are running the micro-service on a different port now (18082) and
+connecting to a different node of the database (26258)
+
+ 
+
+ 
+
 ### Changes to Jmeter script
 
 -   We increase the load testing time to 2 hours (7200 seconds) as some of our
@@ -637,7 +655,8 @@ Setting up and running the green micro-service
 -   It will take 10 minutes for all the 500 threads to be initialized and is now
     load testing our application
 
--   After that 10 minutes is up, run the database change scripts above.
+-   After that 10 minutes is up, run the database change scripts above. Use
+    DBeaver and point to the database node with port 26258.
 
 -   In my humble laptop, the update to the database will take over an hour. Once
     the test is terminated, collect the latency data and plot its distribution
@@ -679,6 +698,10 @@ Once we deployed the green micro-services, we can run it along side blue and
 load test them both just to see how they fare. Of course, in reality, you will
 not run blue and green concurrently for long. We would do some production test
 on green and sunset blue instead.
+
+ 
+
+The Jmeter script to test both can be found here
 
  
 
