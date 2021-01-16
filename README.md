@@ -522,7 +522,8 @@ days to generate 2,500,000 rows!**
 
 ### Load testing the blue micro-service
 
--   We will use JMeter to load test our blue micro-service
+-   We will use JMeter to load test our blue micro-service. The script can be
+    found here <https://github.com/azrulhasni/bluegreen/blob/main/BlueTest.jmx>
 
 ![](README.images/audGtt.jpg)
 
@@ -530,6 +531,26 @@ days to generate 2,500,000 rows!**
     We program a 10 second think time in between transfer
 
 ![](README.images/MBMadh.jpg)
+
+-   Under Response Time Graph, we specify the file where the performance result
+    will be saved
+
+![](README.images/SSxCmh.jpg)
+
+ 
+
+### Result
+
+-   Once the test terminated, we can get the Latency data from the
+    BlueTest.NoUpdate.csv file as specified above.
+
+-   The distribution of the latency data is as per below:
+
+![](README.images/rI9KHz.jpg)
+
+Mean = 234.780541
+
+Standard deviation = 95.1965176
 
  
 
@@ -569,16 +590,20 @@ Setting up and running the green micro-service
         ALTER TABLE account ADD CONSTRAINT account_fk FOREIGN KEY (accounttype) REFERENCES accounttype (accounttypeid)
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    -   Update data of new column
-
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-       update account set accounttype = 1 where product='Saving account'
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
     -   These changes basically refactor out the column ‘Product’ into another
-        table called ‘Accounttype'
+        table called ‘Accounttype’.
 
- 
+    -   Originally, we wanted to also run an update script below:
+
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    update account set accounttype = 1 where product='Saving account'
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Unfortunately, this update script runs for 2 whole days. After resetting the
+    database, we decided to exclude it from the actual test presented here as
+    the data is just too big to process is mere Excel.
+
+     
 
 ### Changes to micro-service
 
@@ -587,6 +612,73 @@ Setting up and running the green micro-service
 
 -   The changes are minimal, we introduced another entity to support the new
     table above and expose its data all the way to our REST API.
+
+ 
+
+### Changes to Jmeter script
+
+-   We increase the load testing time to 2 hours (7200 seconds) as some of our
+    alter table scripts need longer than an hour to complete. The modified
+    script can be found here
+    <https://github.com/azrulhasni/bluegreen/blob/main/BlueTest_au.jmx>
+
+ 
+
+ 
+
+### Running the load test
+
+-   Now, this is the moment of truth: **we will run the database change scripts
+    above while monitoring the performance of our blue micro-service**
+
+-   First, run the Jmeter script above
+    (<https://github.com/azrulhasni/bluegreen/blob/main/BlueTest_au.jmx>)
+
+-   It will take 10 minutes for all the 500 threads to be initialized and is now
+    load testing our application
+
+-   After that 10 minutes is up, run the database change scripts above.
+
+-   In my humble laptop, the update to the database will take over an hour. Once
+    the test is terminated, collect the latency data and plot its distribution
+    alongside the original data collected when no database schema update was
+    done.
+
+ 
+
+### Result
+
+We got the result below:
+
+![](README.images/Za3OI0.jpg)
+
+Mean (normal usage)= 234.780541
+
+Standard deviation (normal usage)= 95.1965176
+
+Mean (usage during schema update) = 270.26361 ms
+
+Standard deviation (usage during schema update) = 68.6027212
+
+ 
+
+### Conclusion
+
+As you can see, the average latency is affected when the database is update but
+the effect is small. What is more important is that the worse case scenario does
+not seem to shift all that much. Basically a blue-green deployment does has
+practically no impact as worst case scenario and shifted the average just by a
+little bit.
+
+ 
+
+Running both blue and green together
+------------------------------------
+
+Once we deployed the green micro-services, we can run it along side blue and
+load test them both just to see how they fare. Of course, in reality, you will
+not run blue and green concurrently for long. We would do some production test
+on green and sunset blue instead.
 
  
 
